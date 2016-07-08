@@ -160,7 +160,7 @@ def forceInstallAction():
 	installAction() 
 
 def cleanAction():
-	runCommand(['rm', '-rvf', configuration['SOURCE_DIR'] + '/*'], 'clean')
+	subprocess.call('sudo rm -rvf ' + configuration['SOURCE_DIR'] + '/*', shell=True)
 
 def updateAction():
 	file = open('/etc/lsb-release', 'r')
@@ -197,7 +197,7 @@ def selfUpdateAction():
 		response = urllib2.urlopen('http://aryalinux.org/releases/latest/alps')
 		urllib.urlretrieve('http://aryalinux.org/releases/latest/alps', '/tmp/alps')
 		os.chmod('/tmp/alps', 0755)
-		runCommand(['mv', '-f', '/tmp/alps', alpsExecutable], 'Moving alps from temp location to /usr/bin');
+		runCommand(['sudo', 'mv', '-f', '/tmp/alps', alpsExecutable], 'Moving alps from temp location to /usr/bin');
 		print 'alps updated successfully'
 	except Exception, e:
 		print 'Error occured in updating alps. ' + str(e)
