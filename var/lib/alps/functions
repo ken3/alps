@@ -1,0 +1,30 @@
+function unzip_dirname()
+{
+	local __resultvar=$2
+	local count=`unzip -l $1 | grep -v files | grep -v "\-\-\-" | grep -v Archive | grep -v "Length" | rev | cut "-d " -f1 | rev | cut -d/ -f1 | uniq | wc -w`
+	echo $count
+	if [ $count -ne 1 ]
+	then
+		eval $__resultvar="$1-extracted"
+	else
+		eval $__resultvar='`unzip -l $1 | rev | cut "-d " -f1 | rev | cut -d/ -f1 | uniq | grep -v ".zip" | grep -v "\-\-" | grep -v "file" | grep -v "Name"`'
+	fi
+}
+
+function unzip_file()
+{
+	local dir_name=''
+	unzip_dirname $1 dir_name
+	if [ `echo $dir_name | grep "extracted"` ]
+	then
+		echo "Create and extract..."
+		mkdir $dir_name
+		cp $1 $dir_name
+		cd $dir_name
+		unzip $1
+		cd ..
+	else
+		echo "Just Extract..."
+		unzip $1
+	fi
+}

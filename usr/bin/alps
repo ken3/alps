@@ -1,0 +1,272 @@
+#!/usr/bin/python
+
+import sys
+import time
+import subprocess
+import urllib
+import urllib2
+import os
+import glob
+
+global configuration
+global traversed
+
+traversed = []
+
+alpsExecutable = '/usr/bin/alps'
+
+def help():
+	print 'Usage : alps <command> [packages...]'
+	print 'Where <command> can be one of the following:\n'
+	print 'install        install packages if not installed'
+	# print 'forceinstall   install packages even if they are installed'
+	print 'reinstall      force installation of an already installed package'
+	print 'updatescripts  update the package build scripts'
+	print 'selfupdate     update alps to latest version online'
+	print 'clean          clean up the working directory'
+	print 'src <url>      download tarball from specified'
+	print 'help           print this message\n'
+	print 'Examples:\n'
+	print 'alps install vlc       # This would build/install vlc'
+	print 'alps clean             # This would clean the build directory'
+
+def loadInstalled():
+	file = open(configuration['INSTALLED_LIST'], 'r')
+	data = file.read()
+	lines = data.split('\n')
+	for line in lines:
+		parts = line.split('=')
+		if len(parts) > 1:
+			traversed.append(parts[0])
+
+def loadConfig(configPath):
+	conf = {}
+	if configPath == None:
+		configPath = '/etc/alps/alps.conf'
+	file = open(configPath, 'r')
+	data = file.read()
+	lines = data.split('\n')
+	for line in lines:
+		parts = line.split('=')
+		if len(parts) == 2:
+			conf[parts[0]] = parts[1].replace('"', '');
+	return conf
+
+def addToQueue(packageName, dependencyQueue):
+	if packageName not in dependencyQueue:
+		file = open(configuration['SCRIPTS_DIR'] + '/' + packageName + '.sh')
+		data = file.read()
+		lines = data.split('\n')
+		dependencies = []
+
+		for line in lines:
+			if line.startswith('#REQ:'):
+				if line.replace('#REQ:', '') != '':
+					dependencies.append(line.replace('#REQ:', ''))
+			if line.startswith('#REC:'):
+				if line.replace('#REC:', '') != '':
+					dependencies.append(line.replace('#REC:', ''))
+
+		for dependency in dependencies:
+			if dependency not in traversed:
+				traversed.append(dependency)
+				addToQueue(dependency, dependencyQueue)
+
+		if packageName not in dependencyQueue:
+			dependencyQueue.append(packageName)
+
+def getDependencies(packageName):
+	if packageName != '':
+		dependencyQueue = []
+		addToQueue(packageName, dependencyQueue)
+		traversed.append(packageName)
+		return dependencyQueue
+	else:
+		return []
+
+def mergeArrays(array1, array2):
+	for item in array2:
+		if item not in array1:
+			index = array1.append(item)
+
+def getAllDependencies(packages):
+	allDependencies = []
+	for package in packages:
+		if package not in traversed:
+			dependencies = getDependencies(package)
+			mergeArrays(allDependencies, dependencies)
+			traversed.append(package)
+	return allDependencies
+
+def getConfirmation(packages):
+	print 'The following packages would be installed:\n'
+	for package in packages:
+		print package,
+	print ''
+	print ''
+	resp = raw_input('Are you sure? (y/N) ')
+	if resp == 'Y' or resp == 'y':
+		for package in packages:
+			runScript(package)
+
+def runScript(packageName):
+	script = configuration['SCRIPTS_DIR'] + '/' + packageName + '.sh'
+	print 'Executing ' + script
+	cmd = []
+	cmd.append(script)
+	p = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=1)
+	for line in iter(p.stdout.readline, b''):
+		print line,
+	p.stdout.close()
+	p.wait()
+	if p.returncode != 0:
+		print 'Error occured in execution of ' + script
+		print 'Aborting'
+		exit()
+	else:
+		f = open(script, 'r')
+		data = f.read()
+		lines = data.split('\n')
+		for line in lines:
+			if line.startswith('#VER:'):
+				parts = line.split(':')
+				if (len(parts) == 3):
+					outstr = parts[1] + ':' + parts[2]
+					os.system('echo "' + outstr + '" | sudo tee -a /etc/alps/versions &> /dev/null');
+
+def runCommand(cmd, actionName):
+	p = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=1)
+	for line in iter(p.stdout.readline, b''):
+		print line,
+	p.stdout.close()
+	p.wait()
+	if p.returncode != 0:
+		print 'Error occured in performing operation: ' + actionName
+		print 'Aborting...'
+		exit()
+
+def installAction():
+	packages = []
+	for i in range(2, len(sys.argv)):
+		packages.append(sys.argv[i])
+	allDependencies = getAllDependencies(packages)
+	if len(allDependencies) > 0:
+		getConfirmation(allDependencies)
+	else:
+		print 'All packages have been installed.'
+		print 'If you want to still enforce installation use the following: \n\nalps forceinstall packagenames\n\nBye!'
+
+def forceInstallAction():
+	installAction() 
+
+def cleanAction():
+	runCommand(['rm', '-rvf', configuration['SOURCE_DIR'] + '/*'], 'cleanup')
+
+def updateAction():
+	file = open('/etc/lsb-release', 'r')
+	data = file.read()
+	lines = data.split('\n')
+	for line in lines:
+		parts = line.split('=')
+		if len(parts) > 1:
+			if parts[0] == 'DISTRIB_RELEASE':
+				version = parts[1].replace('"', '')
+				try:
+					os.remove("/tmp/alps-scripts-" + version + ".tar.gz")
+				except Exception:
+					pass
+				try:
+					print 'Downloading scripts tarball -> ' + "http://aryalinux.org/releases/" + version + "/alps-scripts-" + version + ".tar.gz"
+					response = urllib2.urlopen("http://aryalinux.org/releases/" + version + "/alps-scripts-" + version + ".tar.gz")
+					urllib.urlretrieve ("http://aryalinux.org/releases/" + version + "/alps-scripts-" + version + ".tar.gz", "/tmp/alps-scripts-" + version + ".tar.gz")
+					runCommand(["tar", "xf", "/tmp/alps-scripts-" + version + ".tar.gz", "-C", "/var/cache/alps/scripts/"], "Extraction of scripts tarball")
+					files = glob.glob("/var/cache/alps/scripts/*")
+					for f in files:
+						os.chmod(f, 0755)
+					print 'Scripts updated successfully'
+				except urllib2.URLError, e:
+					print 'Could not download the scripts tarball. Aborting.'
+
+def selfUpdateAction():
+	try:
+		os.remove('/tmp/alps')
+	except Exception:
+		pass
+	try:
+		print 'Fetching the latest version of alps...'
+		response = urllib2.urlopen('http://aryalinux.org/releases/latest/alps')
+		urllib.urlretrieve('http://aryalinux.org/releases/latest/alps', '/tmp/alps')
+		os.chmod('/tmp/alps', 0755)
+		runCommand(['mv', '-f', '/tmp/alps', alpsExecutable], 'Moving alps from temp location to /usr/bin');
+		print 'alps updated successfully'
+	except Exception, e:
+		print 'Error occured in updating alps. ' + str(e)
+		print 'Aborting'
+
+def downloadSource():
+	try:
+		parts = sys.argv[2].split('/')
+		for part in parts:
+			pass
+		try:
+			os.remove(configuration['SOURCE_DIR'] + '/' + part)
+		except Exception, e:
+			pass
+		os.system('wget -c -O '+ configuration['SOURCE_DIR'] + '/' + part + ' ' + sys.argv[2])
+	except Exception, e:
+		print 'Error occured in downloading source.' + str(e)
+		print 'Aborting'
+
+def reinstall():
+	try:
+		resp = raw_input('Are you sure you want to reinstall ' + sys.argv[2] + '? (y/N) ')
+		if resp == 'Y' or resp == 'y':
+			f = open('/etc/alps/installed-list', 'r')
+			lines = f.read().split('\n')
+			f.close()
+			newlines = list()
+			for line in lines:
+				if not line.startswith(sys.argv[2] + '=>') and len(line) != 0:
+					newlines.append(line)
+			nf = open('/tmp/newlist', 'w')
+			for line in newlines:
+				nf.write(line + '\n')
+			nf.close()
+			os.system('sudo mv -v /tmp/newlist /etc/alps/installed-list')
+			runScript(sys.argv[2])
+	except Exception, e:
+		print 'Reinstallation failed' + str(e)
+
+configuration = loadConfig(None)
+distConfig = loadConfig('/etc/lsb-release')
+
+if len(sys.argv) < 2:
+	help()
+	exit()
+if sys.argv[1] == 'install':
+	loadInstalled()
+	installAction()
+	exit()
+if sys.argv[1] == 'forceinstall':
+	forceInstallAction()
+	exit()
+if sys.argv[1] == 'cleanup':
+	cleanAction()
+	exit()
+if sys.argv[1] == 'updatescripts':
+	updateAction()
+	exit()
+if sys.argv[1] == 'selfupdate':
+	selfUpdateAction()
+	exit()
+if sys.argv[1] == 'src':
+    downloadSource()
+    exit()
+if sys.argv[1] == 'reinstall':
+	reinstall()
+	exit()
+if sys.argv[1] == '--help' or sys.argv[1] == 'help':
+	help()
+	exit()
+print 'Invalid command ' + sys.argv[1] + '\n'
+help()
