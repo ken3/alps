@@ -160,7 +160,9 @@ def forceInstallAction():
 	installAction() 
 
 def cleanAction():
+	print 'Cleaning up. This might take a while...'
 	subprocess.call('sudo rm -rf ' + configuration['SOURCE_DIR'] + '/*', shell=True)
+	print 'Done'
 
 def updateAction():
 	file = open('/etc/lsb-release', 'r')
