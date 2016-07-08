@@ -160,7 +160,7 @@ def forceInstallAction():
 	installAction() 
 
 def cleanAction():
-	runCommand(['rm', '-rvf', configuration['SOURCE_DIR'] + '/*'], 'cleanup')
+	runCommand(['rm', '-rvf', configuration['SOURCE_DIR'] + '/*'], 'clean')
 
 def updateAction():
 	file = open('/etc/lsb-release', 'r')
@@ -250,7 +250,7 @@ if sys.argv[1] == 'install':
 if sys.argv[1] == 'forceinstall':
 	forceInstallAction()
 	exit()
-if sys.argv[1] == 'cleanup':
+if sys.argv[1] == 'clean':
 	cleanAction()
 	exit()
 if sys.argv[1] == 'updatescripts':
