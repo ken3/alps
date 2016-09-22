@@ -7,6 +7,7 @@ import urllib
 import urllib2
 import os
 import glob
+from shutil import copy2
 
 global configuration
 global traversed
@@ -174,20 +175,26 @@ def updateAction():
 			if parts[0] == 'DISTRIB_RELEASE':
 				version = parts[1].replace('"', '')
 				try:
-					os.remove("/tmp/alps-scripts-" + version + ".tar.gz")
+					os.remove("/tmp/" + version + ".zip")
 				except Exception:
 					pass
 				try:
-					print 'Downloading scripts tarball -> ' + "http://aryalinux.org/releases/" + version + "/alps-scripts-" + version + ".tar.gz"
-					response = urllib2.urlopen("http://aryalinux.org/releases/" + version + "/alps-scripts-" + version + ".tar.gz")
-					urllib.urlretrieve ("http://aryalinux.org/releases/" + version + "/alps-scripts-" + version + ".tar.gz", "/tmp/alps-scripts-" + version + ".tar.gz")
-					runCommand(["tar", "xf", "/tmp/alps-scripts-" + version + ".tar.gz", "-C", "/var/cache/alps/scripts/"], "Extraction of scripts tarball")
-					files = glob.glob("/var/cache/alps/scripts/*")
+					print 'Downloading scripts from github...'
+					response = urllib2.urlopen("https://github.com/FluidIdeas/aryalinux/archive/" + version + ".zip")
+					urllib.urlretrieve ("https://github.com/FluidIdeas/aryalinux/archive/" + version + ".zip", "/tmp/" + version + ".zip")
+					runCommand(["unzip", "-qq", "-o", "/tmp/" + version+ ".zip", "aryalinux-" + version + "/blfs/*", "-d", "/tmp"], "Extraction of scripts tarball")
+					files = glob.glob("/tmp/aryalinux-" + version + "/blfs/*.sh")
 					for f in files:
 						os.chmod(f, 0755)
+						copy2(f, '/var/cache/alps/scripts')
 					print 'Scripts updated successfully'
 				except urllib2.URLError, e:
 					print 'Could not download the scripts tarball. Aborting.'
+				try:
+					os.remove("/tmp/" + version + ".zip")
+					runCommand(["rm", "-rf", "/tmp/aryalinux-" + version], "Cleaning up")
+				except Exception:
+					pass
 
 def selfUpdateAction():
 	try:
