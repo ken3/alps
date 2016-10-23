@@ -99,17 +99,19 @@ def getAllDependencies(packages):
 			traversed.append(package)
 	return allDependencies
 
-def getConfirmation(packages):
-	print 'The following packages would be installed:\n'
-	for package in packages:
-		print package,
-	print ''
-	print ''
-	resp = raw_input('Are you sure? (y/N) ')
+def getConfirmation(packages, prompt=True):
+	if prompt:
+		print 'The following packages would be installed:\n'
+		for package in packages:
+			print package,
+		print ''
+		print ''
+		resp = raw_input('Are you sure? (y/N) ')
+	else:
+		resp = 'y'
 	if resp == 'Y' or resp == 'y':
 		for package in packages:
 			runScript(package)
-
 def runScript(packageName):
 	script = configuration['SCRIPTS_DIR'] + '/' + packageName + '.sh'
 	print 'Executing ' + script
@@ -146,13 +148,13 @@ def runCommand(cmd, actionName):
 		print 'Aborting...'
 		exit()
 
-def installAction():
+def installAction(prompt=True):
 	packages = []
 	for i in range(2, len(sys.argv)):
 		packages.append(sys.argv[i])
 	allDependencies = getAllDependencies(packages)
 	if len(allDependencies) > 0:
-		getConfirmation(allDependencies)
+		getConfirmation(allDependencies, prompt)
 	else:
 		print 'All packages have been installed.'
 		print 'If you want to still enforce installation use the following: \n\nalps forceinstall packagenames\n\nBye!'
@@ -256,6 +258,10 @@ if sys.argv[1] == 'install':
 	loadInstalled()
 	installAction()
 	exit()
+if sys.argv[1] == 'install-no-prompt':
+        loadInstalled()
+        installAction(False)
+        exit()
 if sys.argv[1] == 'forceinstall':
 	forceInstallAction()
 	exit()
