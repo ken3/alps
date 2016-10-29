@@ -20,7 +20,6 @@ def help():
 	print 'Usage : alps <command> [packages...]'
 	print 'Where <command> can be one of the following:\n'
 	print 'install        install packages if not installed'
-	# print 'forceinstall   install packages even if they are installed'
 	print 'reinstall      force installation of an already installed package'
 	print 'updatescripts  update the package build scripts'
 	print 'selfupdate     update alps to latest version online'
@@ -113,11 +112,9 @@ def getConfirmation(packages, prompt=True):
 		for package in packages:
 			runScript(package)
 def runScript(packageName):
-	script = configuration['SCRIPTS_DIR'] + '/' + packageName + '.sh'
+	cmd = [ 'makepkg.sh', packageName ]
 	print 'Executing ' + script
-	cmd = []
-	cmd.append(script)
-	p = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=1)
+	p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
 	for line in iter(p.stdout.readline, b''):
 		print line,
 	p.stdout.close()
@@ -126,19 +123,9 @@ def runScript(packageName):
 		print 'Error occured in execution of ' + script
 		print 'Aborting'
 		exit()
-	else:
-		f = open(script, 'r')
-		data = f.read()
-		lines = data.split('\n')
-		for line in lines:
-			if line.startswith('#VER:'):
-				parts = line.split(':')
-				if (len(parts) == 3):
-					outstr = parts[1] + ':' + parts[2]
-					os.system('echo "' + outstr + '" | sudo tee -a /etc/alps/versions &> /dev/null');
 
 def runCommand(cmd, actionName):
-	p = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=1)
+	p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
 	for line in iter(p.stdout.readline, b''):
 		print line,
 	p.stdout.close()
