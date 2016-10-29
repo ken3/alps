@@ -20,6 +20,7 @@ def help():
 	print 'Usage : alps <command> [packages...]'
 	print 'Where <command> can be one of the following:\n'
 	print 'install        install packages if not installed'
+	# print 'forceinstall   install packages even if they are installed'
 	print 'reinstall      force installation of an already installed package'
 	print 'updatescripts  update the package build scripts'
 	print 'selfupdate     update alps to latest version online'
@@ -112,9 +113,11 @@ def getConfirmation(packages, prompt=True):
 		for package in packages:
 			runScript(package)
 def runScript(packageName):
-	cmd = [ 'makepkg.sh', packageName ]
+	script = configuration['SCRIPTS_DIR'] + '/' + packageName + '.sh'
 	print 'Executing ' + script
-	p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
+	cmd = []
+	cmd.append(script)
+	p = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=1)
 	for line in iter(p.stdout.readline, b''):
 		print line,
 	p.stdout.close()
@@ -123,9 +126,19 @@ def runScript(packageName):
 		print 'Error occured in execution of ' + script
 		print 'Aborting'
 		exit()
+	else:
+		f = open(script, 'r')
+		data = f.read()
+		lines = data.split('\n')
+		for line in lines:
+			if line.startswith('#VER:'):
+				parts = line.split(':')
+				if (len(parts) == 3):
+					outstr = parts[1] + ':' + parts[2]
+					os.system('echo "' + outstr + '" | sudo tee -a /etc/alps/versions &> /dev/null');
 
 def runCommand(cmd, actionName):
-	p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
+	p = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=1)
 	for line in iter(p.stdout.readline, b''):
 		print line,
 	p.stdout.close()
@@ -192,8 +205,8 @@ def selfUpdateAction():
 		pass
 	try:
 		print 'Fetching the latest version of alps...'
-		response = urllib2.urlopen('http://aryalinux.org/releases/latest/alps')
-		urllib.urlretrieve('http://aryalinux.org/releases/latest/alps', '/tmp/alps')
+		response = urllib2.urlopen('https://raw.githubusercontent.com/FluidIdeas/alps/master/usr/bin/alps')
+		urllib.urlretrieve('https://raw.githubusercontent.com/FluidIdeas/alps/master/usr/bin/alps', '/tmp/alps')
 		os.chmod('/tmp/alps', 0755)
 		runCommand(['sudo', 'mv', '-f', '/tmp/alps', alpsExecutable], 'Moving alps from temp location to /usr/bin');
 		print 'alps updated successfully'
