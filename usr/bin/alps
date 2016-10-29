@@ -100,12 +100,12 @@ def getAllDependencies(packages):
 	return allDependencies
 
 def getConfirmation(packages, prompt=True):
+        print 'The following packages would be installed:\n'
+        for package in packages:
+                print package,
+        print ''
+        print ''
 	if prompt:
-		print 'The following packages would be installed:\n'
-		for package in packages:
-			print package,
-		print ''
-		print ''
 		resp = raw_input('Are you sure? (y/N) ')
 	else:
 		resp = 'y'
