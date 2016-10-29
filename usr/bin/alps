@@ -116,7 +116,7 @@ def runScript(packageName):
 	p = subprocess.Popen(['makepkg.sh', packageName])
 	p.wait()
 	if p.returncode != 0:
-		print 'Error occured in execution of ' + script
+		print 'Error occured in execution of ' + packageName + '.sh'
 		print 'Aborting'
 		exit()
 
