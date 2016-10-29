@@ -113,35 +113,15 @@ def getConfirmation(packages, prompt=True):
 		for package in packages:
 			runScript(package)
 def runScript(packageName):
-	script = configuration['SCRIPTS_DIR'] + '/' + packageName + '.sh'
-	print 'Executing ' + script
-	cmd = []
-	cmd.append(script)
-	p = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=1)
-	for line in iter(p.stdout.readline, b''):
-		print line,
-	p.stdout.close()
+	p = subprocess.Popen(['makepkg.sh', packageName], shell=True)
 	p.wait()
 	if p.returncode != 0:
 		print 'Error occured in execution of ' + script
 		print 'Aborting'
 		exit()
-	else:
-		f = open(script, 'r')
-		data = f.read()
-		lines = data.split('\n')
-		for line in lines:
-			if line.startswith('#VER:'):
-				parts = line.split(':')
-				if (len(parts) == 3):
-					outstr = parts[1] + ':' + parts[2]
-					os.system('echo "' + outstr + '" | sudo tee -a /etc/alps/versions &> /dev/null');
 
 def runCommand(cmd, actionName):
-	p = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=1)
-	for line in iter(p.stdout.readline, b''):
-		print line,
-	p.stdout.close()
+	p = subprocess.Popen(cmd, shell=True)
 	p.wait()
 	if p.returncode != 0:
 		print 'Error occured in performing operation: ' + actionName
