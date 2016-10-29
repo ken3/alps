@@ -113,7 +113,7 @@ def getConfirmation(packages, prompt=True):
 		for package in packages:
 			runScript(package)
 def runScript(packageName):
-	p = subprocess.Popen(['makepkg.sh', packageName], shell=True)
+	p = subprocess.Popen(['makepkg.sh', packageName])
 	p.wait()
 	if p.returncode != 0:
 		print 'Error occured in execution of ' + script
@@ -121,7 +121,7 @@ def runScript(packageName):
 		exit()
 
 def runCommand(cmd, actionName):
-	p = subprocess.Popen(cmd, shell=True)
+	p = subprocess.Popen(cmd)
 	p.wait()
 	if p.returncode != 0:
 		print 'Error occured in performing operation: ' + actionName
