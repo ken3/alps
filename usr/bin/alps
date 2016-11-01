@@ -125,8 +125,10 @@ def isSourceOnly(packageName):
 
 def runScript(packageName):
 	if isSourceOnly(packageName):
+		print 'Building/Installing ' + packageName + '.sh'
 		p = subprocess.Popen(['/var/cache/alps/scripts/' + packageName + '.sh'])
 	else:
+		print 'Building and creating binaries for ' + packageName + '.sh'
 		p = subprocess.Popen(['makepkg.sh', packageName])
 	p.wait()
 	if p.returncode != 0:
