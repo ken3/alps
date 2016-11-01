@@ -2,7 +2,6 @@ function unzip_dirname()
 {
 	local __resultvar=$2
 	local count=`unzip -l $1 | grep -v files | grep -v "\-\-\-" | grep -v Archive | grep -v "Length" | rev | cut "-d " -f1 | rev | cut -d/ -f1 | uniq | wc -w`
-	echo $count
 	if [ $count -ne 1 ]
 	then
 		eval $__resultvar="$1-extracted"
