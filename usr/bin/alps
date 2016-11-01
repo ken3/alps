@@ -113,15 +113,18 @@ def getConfirmation(packages, prompt=True):
 		for package in packages:
 			runScript(package)
 
+def isSourceOnly(packageName):
+        with open('/var/cache/alps/scripts/' + packageName + '.sh') as f:
+                lines = f.readlines()
+                sourceOnly = False
+                for line in lines:
+                        if line == 'SOURCE_ONLY=y':
+                                sourceOnly = True
+                                break
+ 	return sourceOnly
+
 def runScript(packageName):
-	with open('/var/cache/alps/scripts/' + packageName + '.sh') as f:
-		lines = f.readlines()
-		sourceOnly = False
-		for line in lines:
-			if line == 'SOURCE_ONLY=y':
-				sourceOnly = True
-				break
-	if sourceOnly:
+	if isSourceOnly(packageName):
 		p = subprocess.Popen(['/var/cache/alps/scripts/' + packageName + '.sh'])
 	else:
 		p = subprocess.Popen(['makepkg.sh', packageName])
