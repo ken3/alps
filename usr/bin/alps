@@ -122,7 +122,11 @@ def isSourceOnly(packageName):
                                 sourceOnly = True
                                 break
 	envStatus = False
-	if os.environ['SOURCE_ONLY'] == 'y':
+	try:
+		sourceOnlyEnv = os.environ['SOURCE_ONLY']
+	except:
+		sourceOnlyEnv = 'n'
+	if sourceOnlyEnv == 'y':
 		envStatus = True
  	if envStatus == True:
 		return envStatus
