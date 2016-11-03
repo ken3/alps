@@ -121,18 +121,31 @@ def isSourceOnly(packageName):
                         if line.strip() == 'SOURCE_ONLY=y':
                                 sourceOnly = True
                                 break
- 	return sourceOnly
+	envStatus = False
+	if os.environ['SOURCE_ONLY'] == 'y':
+		envStatus = True
+ 	if envStatus == True:
+		return envStatus
+	else:
+		return sourceOnly
 
 def runScript(packageName):
 	if isSourceOnly(packageName):
 		print 'Building/Installing ' + packageName + '.sh'
 		p = subprocess.Popen(['/var/cache/alps/scripts/' + packageName + '.sh'])
+		p.wait()
 	else:
 		print 'Building and creating binaries for ' + packageName + '.sh'
 		p = subprocess.Popen(['makepkg.sh', packageName])
-	p.wait()
+		p.wait()
+		p1 = subprocess.Popen(['/var/cache/alps/scripts/' + packageName + '-appconfig.sh'])
+		p1.wait()
 	if p.returncode != 0:
 		print 'Error occured in execution of ' + packageName + '.sh'
+		print 'Aborting'
+		exit()
+	if p1.returncode != 0:
+		print 'Error occured in configuring ' + packageName
 		print 'Aborting'
 		exit()
 
