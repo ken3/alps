@@ -142,8 +142,9 @@ def runScript(packageName):
 		print 'Building and creating binaries for ' + packageName + '.sh'
 		p = subprocess.Popen(['makepkg.sh', packageName])
 		p.wait()
-		p1 = subprocess.Popen(['/var/cache/alps/scripts/' + packageName + '-appconfig.sh'])
-		p1.wait()
+		if os.path.exists('/var/cache/alps/scripts/' + packageName + '-appconfig.sh'):
+			p1 = subprocess.Popen(['/var/cache/alps/scripts/' + packageName + '-appconfig.sh'])
+			p1.wait()
 	if p.returncode != 0:
 		print 'Error occured in execution of ' + packageName + '.sh'
 		print 'Aborting'
