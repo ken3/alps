@@ -145,12 +145,12 @@ def runScript(packageName):
 		if os.path.exists('/var/cache/alps/scripts/' + packageName + '-appconfig.sh'):
 			p1 = subprocess.Popen(['/var/cache/alps/scripts/' + packageName + '-appconfig.sh'])
 			p1.wait()
+		        if p1.returncode != 0:
+               			print 'Error occured in configuring ' + packageName
+		                print 'Aborting'
+		                exit()
 	if p.returncode != 0:
 		print 'Error occured in execution of ' + packageName + '.sh'
-		print 'Aborting'
-		exit()
-	if p1.returncode != 0:
-		print 'Error occured in configuring ' + packageName
 		print 'Aborting'
 		exit()
 
