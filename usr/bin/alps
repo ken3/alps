@@ -129,7 +129,7 @@ def runPackageInstall(packageName):
 		p = subprocess.Popen(['/var/cache/alps/scripts/' + packageName + '.sh'])
 		p.wait()
 		if p.returncode != 0:
-			print 'Error occured while building/installing ' + packageName '. This is a source only package. Aborting.'
+			print 'Error occured while building/installing ' + packageName + '. This is a source only package. Aborting.'
 			exit(1)
 	else:
 		print 'Building and creating binaries for ' + packageName + '.sh'
