@@ -111,7 +111,7 @@ def getConfirmation(packages, prompt=True):
 		resp = 'y'
 	if resp == 'Y' or resp == 'y':
 		for package in packages:
-			runScript(package)
+			runPackageInstall(package)
 
 def isSourceOnly(packageName):
         with open('/var/cache/alps/scripts/' + packageName + '.sh') as f:
@@ -133,7 +133,7 @@ def isSourceOnly(packageName):
 	else:
 		return sourceOnly
 
-def runScript(packageName):
+def runPackageInstall(packageName):
 	if isSourceOnly(packageName):
 		print 'Building/Installing ' + packageName + '.sh'
 		p = subprocess.Popen(['/var/cache/alps/scripts/' + packageName + '.sh'])
@@ -266,7 +266,7 @@ def reinstall():
 				nf.write(line + '\n')
 			nf.close()
 			os.system('sudo mv -v /tmp/newlist /etc/alps/installed-list')
-			runScript(sys.argv[2])
+			runPackageInstall(sys.argv[2])
 	except Exception, e:
 		print 'Reinstallation failed' + str(e)
 
