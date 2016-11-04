@@ -138,21 +138,29 @@ def runScript(packageName):
 		print 'Building/Installing ' + packageName + '.sh'
 		p = subprocess.Popen(['/var/cache/alps/scripts/' + packageName + '.sh'])
 		p.wait()
+		if p.returncode != 0:
+			print 'Error occured while building/installing ' + packageName '. This is a source only package. Aborting.'
+			exit(1)
 	else:
 		print 'Building and creating binaries for ' + packageName + '.sh'
-		p = subprocess.Popen(['makepkg.sh', packageName])
-		p.wait()
 		if os.path.exists('/var/cache/alps/scripts/' + packageName + '-appconfig.sh'):
-			p1 = subprocess.Popen(['/var/cache/alps/scripts/' + packageName + '-appconfig.sh'])
-			p1.wait()
-		        if p1.returncode != 0:
-               			print 'Error occured in configuring ' + packageName
-		                print 'Aborting'
-		                exit()
-	if p.returncode != 0:
-		print 'Error occured in execution of ' + packageName + '.sh'
-		print 'Aborting'
-		exit()
+			pre = subprocess.Popen(['/var/cache/alps/scripts/' + packageName + '-appconfig.sh', 'preinstall'])
+			pre.wait()
+			if pre.returncode != 0:
+				print 'Pre-installation tasks failed for ' + packageName + '.sh. Aborting.'
+				exit(1)
+			else:
+				p = subprocess.Popen(['makepkg.sh', packageName])
+				p.wait()
+				if p.returncode != 0:
+					print 'Error occured while running build/installation for ' + packageName + '. Aborting.'
+					exit(1)
+				else:
+					post = subprocess.Popen(['/var/cache/alps/scripts/' + packageName + '-appconfig.sh', 'postinstall'])
+					post.wait()
+					if post.returncode != 0:
+						print 'Post installation tasks failed for : ' + packageName + '.sh. Aborting.'
+						exit(1)
 
 def runCommand(cmd, actionName):
 	p = subprocess.Popen(cmd)
