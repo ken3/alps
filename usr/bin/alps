@@ -121,20 +121,10 @@ def isSourceOnly(packageName):
                         if line.strip() == 'SOURCE_ONLY=y':
                                 sourceOnly = True
                                 break
-	envStatus = False
-	try:
-		sourceOnlyEnv = os.environ['SOURCE_ONLY']
-	except:
-		sourceOnlyEnv = 'n'
-	if sourceOnlyEnv == 'y':
-		envStatus = True
- 	if envStatus == True:
-		return envStatus
-	else:
 		return sourceOnly
 
 def runPackageInstall(packageName):
-	if isSourceOnly(packageName):
+	if isSourceOnly(packageName) or os.environ['PKG_BUILDER'] != 'aryalinux':
 		print 'Building/Installing ' + packageName + '.sh'
 		p = subprocess.Popen(['/var/cache/alps/scripts/' + packageName + '.sh'])
 		p.wait()
