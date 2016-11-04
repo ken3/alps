@@ -151,6 +151,12 @@ def runPackageInstall(packageName):
 					if post.returncode != 0:
 						print 'Post installation tasks failed for : ' + packageName + '.sh. Aborting.'
 						exit(1)
+		else:
+			p = subprocess.Popen(['makepkg.sh', packageName])
+			p.wait()
+			if p.returncode != 0:
+				print 'Error occured while running build/installation for ' + packageName + '. Aborting.'
+				exit(1)
 
 def runCommand(cmd, actionName):
 	p = subprocess.Popen(cmd)
