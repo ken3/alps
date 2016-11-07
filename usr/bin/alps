@@ -124,7 +124,7 @@ def isSourceOnly(packageName):
 		return sourceOnly
 
 def runPackageInstall(packageName):
-	if isSourceOnly(packageName) or os.environ['PKG_BUILDER'] != 'aryalinux':
+	if isSourceOnly(packageName) or os.environ['PKG_BUILDER'] != 'chandrakant':
 		print 'Building/Installing ' + packageName + '.sh'
 		p = subprocess.Popen(['/var/cache/alps/scripts/' + packageName + '.sh'])
 		p.wait()
