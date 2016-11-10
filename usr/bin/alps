@@ -128,7 +128,7 @@ def runPackageInstall(packageName):
 		print 'Building/Installing ' + packageName + '.sh'
 		returncode = subprocess.call(['/var/cache/alps/scripts/' + packageName + '.sh | tee -a /var/cache/alps/logs/' + packageName + '.log'], shell=True)
 		if returncode != 0:
-			print 'Error occured while building/installing ' + packageName '. This is a source only package. Aborting.'
+			print 'Error occured while building/installing ' + packageName + '. This is a source only package. Aborting.'
 			exit(1)
 	else:
 		print 'Building and creating binaries for ' + packageName + '.sh'
