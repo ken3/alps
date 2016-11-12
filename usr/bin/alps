@@ -133,7 +133,7 @@ def runPackageInstall(packageName):
 	else:
 		print 'SOURCE_BINARY :: Building and creating binaries for ' + packageName + '.sh'
 		if os.path.exists('/var/cache/alps/scripts/' + packageName + '-appconfig.sh'):
-			returncode = subprocess.call('/var/cache/alps/scripts/' + packageName + '-appconfig.sh preinstall | tee -a /var/cache/alps/logs/' + packageName + '.log'], shell=True)
+			returncode = subprocess.call('/var/cache/alps/scripts/' + packageName + '-appconfig.sh preinstall | tee -a /var/cache/alps/logs/' + packageName + '.log', shell=True)
 			if returncode != 0:
 				print 'Pre-installation tasks failed for ' + packageName + '.sh. Aborting.'
 				exit(1)
