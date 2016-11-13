@@ -134,7 +134,7 @@ def runPackageInstall(packageName):
 		print 'SOURCE_BINARY :: Building and creating binaries for ' + packageName + '.sh'
 		if os.path.exists('/var/cache/alps/scripts/' + packageName + '-appconfig.sh'):
 			print 'Running pre-installation tasks...'
-			returncode = subprocess.call('/var/cache/alps/scripts/' + packageName + '-appconfig.sh preinstall | tee -a /var/cache/alps/logs/' + packageName + '.log', shell=True)
+			returncode = subprocess.call('sudo /var/cache/alps/scripts/' + packageName + '-appconfig.sh preinstall | tee -a /var/cache/alps/logs/' + packageName + '.log', shell=True)
 			if returncode != 0:
 				print 'Pre-installation tasks failed for ' + packageName + '.sh. Aborting.'
 				exit(1)
@@ -146,7 +146,7 @@ def runPackageInstall(packageName):
 					exit(1)
 				else:
 					print 'Build-install-makepkg succeeded. Running post-installation tasks...'
-					returncode = subprocess.call('/var/cache/alps/scripts/' + packageName + '-appconfig.sh postinstall | tee -a /var/cache/alps/logs/' + packageName + '.log', shell=True)
+					returncode = subprocess.call('sudo /var/cache/alps/scripts/' + packageName + '-appconfig.sh postinstall | tee -a /var/cache/alps/logs/' + packageName + '.log', shell=True)
 					if returncode != 0:
 						print 'Post installation tasks failed for : ' + packageName + '.sh. Aborting.'
 						exit(1)
