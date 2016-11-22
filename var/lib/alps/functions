@@ -1,12 +1,12 @@
 function unzip_dirname()
 {
 	local __resultvar=$2
-	local count=`unzip -l $1 | grep -v files | grep -v "\-\-\-" | grep -v Archive | grep -v "Length" | rev | cut "-d " -f1 | rev | cut -d/ -f1 | uniq | wc -w`
+	local count = $(unzip -l $1 | grep / | rev | tr -s ' ' | cut -d ' ' -f1 | rev | cut -d/ -f1 | uniq | wc -w)
 	if [ $count -ne 1 ]
 	then
 		eval $__resultvar="$1-extracted"
 	else
-		eval $__resultvar='`unzip -l $1 | rev | cut "-d " -f1 | rev | cut -d/ -f1 | uniq | grep -v ".zip" | grep -v "\-\-" | grep -v "file" | grep -v "Name"`'
+		eval $__resultvar=$(unzip -l master.zip | grep / | rev | tr -s ' ' | cut -d ' ' -f1 | rev | cut -d/ -f1 | uniq)
 	fi
 }
 
