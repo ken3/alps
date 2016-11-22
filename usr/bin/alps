@@ -127,42 +127,51 @@ def isSourceOnly(packageName):
 		return sourceOnly
 
 def runPackageInstall(packageName):
-	if isSourceOnly(packageName) or ( 'PKG_BUILDER' in os.environ and os.environ['PKG_BUILDER'] != 'chandrakant'):
-		print 'SOURCE_ONLY :: Building/Installing ' + packageName + '.sh'
-		returncode = subprocess.call('/var/cache/alps/scripts/' + packageName + '.sh | tee -a /var/cache/alps/logs/' + packageName + '.log', shell=True)
-		if returncode != 0:
-			print 'Error occured while building/installing ' + packageName + '. Aborting.'
-			exit(1)
-	else:
-		print 'SOURCE_BINARY :: Building and creating binaries for ' + packageName + '.sh'
-		if os.path.exists('/var/cache/alps/scripts/' + packageName + '-appconfig.sh'):
-			print 'Running pre-installation tasks...'
-			returncode = subprocess.call('sudo /var/cache/alps/scripts/' + packageName + '-appconfig.sh preinstall | tee -a /var/cache/alps/logs/' + packageName + '.log', shell=True)
-			if returncode != 0:
-				print 'Pre-installation tasks failed for ' + packageName + '.sh. Aborting.'
-				exit(1)
-			else:
-				print 'Pre-Installation tasks succeeded. Running build-install-makepkg...'
-				returncode = subprocess.call('makepkg.sh ' + packageName + ' | tee -a /var/cache/alps/logs/' + packageName + '.log', shell=True)
-				if returncode != 0:
-					print 'Error occured while running build/installation for ' + packageName + '. Aborting.'
-					exit(1)
-				else:
-					print 'Build-install-makepkg succeeded. Running post-installation tasks...'
-					returncode = subprocess.call('sudo /var/cache/alps/scripts/' + packageName + '-appconfig.sh postinstall | tee -a /var/cache/alps/logs/' + packageName + '.log', shell=True)
-					if returncode != 0:
-						print 'Post installation tasks failed for : ' + packageName + '.sh. Aborting.'
-						exit(1)
-					else:
-						print 'Build-Install-Makepkg succeeded.'
-		else:
-			print 'No config scripts found. Running straightforward build-install-makepkg...'
-			returncode = subprocess.call('makepkg.sh ' + packageName + ' | tee -a /var/cache/alps/logs/' + packageName + '.log', shell=True)
-			if returncode != 0:
-				print 'Error occured while running build/installation for ' + packageName + '. Aborting.'
-				exit(1)
-			else:
-				print 'Build-Install-Makepkg succeeded.'
+	# print 'SOURCE_ONLY :: Building/Installing ' + packageName + '.sh'
+	process = subprocess.Popen(['/var/cache/alps/scripts/' + packageName + '.sh | tee -a /var/cache/alps/logs/' + packageName + '.log'], shell=True)
+	returncode = process.wait()
+	# returncode = subprocess.call('/var/cache/alps/scripts/' + packageName + '.sh | tee -a /var/cache/alps/logs/' + packageName + '.log', shell=True)
+	if returncode != 0:
+		print 'Error occured while building/installing ' + packageName + '. Aborting.'
+		exit(1)
+
+#def runPackageInstall(packageName):
+#	if isSourceOnly(packageName) or ( 'PKG_BUILDER' in os.environ and os.environ['PKG_BUILDER'] != 'chandrakant'):
+#		print 'SOURCE_ONLY :: Building/Installing ' + packageName + '.sh'
+#		returncode = subprocess.call('/var/cache/alps/scripts/' + packageName + '.sh | tee -a /var/cache/alps/logs/' + packageName + '.log', shell=True)
+#		if returncode != 0:
+#			print 'Error occured while building/installing ' + packageName + '. Aborting.'
+#			exit(1)
+#	else:
+#		print 'SOURCE_BINARY :: Building and creating binaries for ' + packageName + '.sh'
+#		if os.path.exists('/var/cache/alps/scripts/' + packageName + '-appconfig.sh'):
+#			print 'Running pre-installation tasks...'
+#			returncode = subprocess.call('sudo /var/cache/alps/scripts/' + packageName + '-appconfig.sh preinstall | tee -a /var/cache/alps/logs/' + packageName + '.log', shell=True)
+#			if returncode != 0:
+#				print 'Pre-installation tasks failed for ' + packageName + '.sh. Aborting.'
+#				exit(1)
+#			else:
+#				print 'Pre-Installation tasks succeeded. Running build-install-makepkg...'
+#				returncode = subprocess.call('makepkg.sh ' + packageName + ' | tee -a /var/cache/alps/logs/' + packageName + '.log', shell=True)
+#				if returncode != 0:
+#					print 'Error occured while running build/installation for ' + packageName + '. Aborting.'
+#					exit(1)
+#				else:
+#					print 'Build-install-makepkg succeeded. Running post-installation tasks...'
+#					returncode = subprocess.call('sudo /var/cache/alps/scripts/' + packageName + '-appconfig.sh postinstall | tee -a /var/cache/alps/logs/' + packageName + '.log', shell=True)
+#					if returncode != 0:
+#						print 'Post installation tasks failed for : ' + packageName + '.sh. Aborting.'
+#						exit(1)
+#					else:
+#						print 'Build-Install-Makepkg succeeded.'
+#		else:
+#			print 'No config scripts found. Running straightforward build-install-makepkg...'
+#			returncode = subprocess.call('makepkg.sh ' + packageName + ' | tee -a /var/cache/alps/logs/' + packageName + '.log', shell=True)
+#			if returncode != 0:
+#				print 'Error occured while running build/installation for ' + packageName + '. Aborting.'
+#				exit(1)
+#			else:
+#				print 'Build-Install-Makepkg succeeded.'
 
 def runCommand(cmd, actionName):
 	p = subprocess.Popen(cmd)
