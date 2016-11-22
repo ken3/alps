@@ -17,19 +17,22 @@ traversed = []
 alpsExecutable = '/usr/bin/alps'
 
 def help():
-	print 'Usage : alps <command> [packages...]'
-	print 'Where <command> can be one of the following:\n'
-	print 'install        install packages if not installed'
-	# print 'forceinstall   install packages even if they are installed'
-	print 'reinstall      force installation of an already installed package'
-	print 'updatescripts  update the package build scripts'
-	print 'selfupdate     update alps to latest version online'
-	print 'clean          clean up the working directory'
-	print 'src <url>      download tarball from specified'
-	print 'help           print this message\n'
-	print 'Examples:\n'
-	print 'alps install vlc       # This would build/install vlc'
-	print 'alps clean             # This would clean the build directory'
+        print 'Usage : alps <command> [packages...]'
+        print 'Where <command> can be one of the following:\n'
+        print 'install                  Install packages if not installed'
+        print 'reinstall                Force installation of an already installed package'
+        print 'updatescripts            Update the package build scripts'
+        print 'selfupdate               Update alps to latest version online'
+        print 'clean                    Clean up the working directory'
+        print 'src <url>                download tarball from specified'
+        print 'showall                  Show the list of all buildscripts'
+        print 'showall <wildcards>      List all buildscripts matching the wildcards. Wildcards should be enclosed in quotes.'
+        print 'showinstalled            Show the list of all installed packages'
+        print 'help                     Print this message\n'
+        print 'Examples:\n'
+        print 'alps install vlc        # This would build/install vlc'
+        print 'alps clean              # This would clean the build directory'
+        print 'alps showall "*mate*"   # This would show all package names with the word mate in them'
 
 def loadInstalled():
 	file = open(configuration['INSTALLED_LIST'], 'r')
@@ -269,6 +272,21 @@ def reinstall():
 	except Exception, e:
 		print 'Reinstallation failed' + str(e)
 
+def showMatchingAction():
+        allscripts = subprocess.check_output('ls /var/cache/alps/scripts/*' + sys.argv[2] + '* | sed "s@/var/cache/alps/scripts/@@g" | sed "s/.sh$//g"', shell=True)
+        print allscripts
+        pass
+
+def showAllAction():
+        allscripts = subprocess.check_output('ls /var/cache/alps/scripts/*.sh | sed "s@/var/cache/alps/scripts/@@g" | sed "s/.sh$//g"', shell=True)
+        print allscripts
+        pass
+
+def showInstalledAction():
+        allinstalled = subprocess.check_output('cat /etc/alps/installed-list | cut -d= -f1', shell=True)
+        print allinstalled
+        pass
+
 configuration = loadConfig(None)
 distConfig = loadConfig('/etc/lsb-release')
 
@@ -295,6 +313,15 @@ if sys.argv[1] == 'updatescripts':
 if sys.argv[1] == 'selfupdate':
 	selfUpdateAction()
 	exit()
+if sys.argv[1] == 'showall':
+        if len(sys.argv) == 2:
+                showAllAction()
+        else:
+                showMatchingAction()
+        exit()
+if sys.argv[1] == 'showinstalled':
+        showInstalledAction()
+        exit()
 if sys.argv[1] == 'src':
     downloadSource()
     exit()
