@@ -127,7 +127,7 @@ def isSourceOnly(packageName):
 		return sourceOnly
 
 def runPackageInstall(packageName):
-	if isSourceOnly(packageName) or os.environ['PKG_BUILDER'] != 'chandrakant':
+	if isSourceOnly(packageName) or ( 'PKG_BUILDER' in os.environ and os.environ['PKG_BUILDER'] != 'chandrakant'):
 		print 'SOURCE_ONLY :: Building/Installing ' + packageName + '.sh'
 		returncode = subprocess.call('/var/cache/alps/scripts/' + packageName + '.sh | tee -a /var/cache/alps/logs/' + packageName + '.log', shell=True)
 		if returncode != 0:
