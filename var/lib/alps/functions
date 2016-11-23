@@ -1,20 +1,20 @@
 function unzip_dirname()
 {
-	local __resultvar=$2
-	local count = $(unzip -l $1 | grep / | rev | tr -s ' ' | cut -d ' ' -f1 | rev | cut -d/ -f1 | uniq | wc -w)
-	if [ $count -ne 1 ]
-	then
-		eval $__resultvar="$1-extracted"
+	dirname="$2-extracted"
+	unzip -o -q $1 -d $dirname
+	if [ "$(ls $dirname | wc -w)" == "1" ]; then
+		echo "$(ls $dirname)"
 	else
-		eval $__resultvar=$(unzip -l master.zip | grep / | rev | tr -s ' ' | cut -d ' ' -f1 | rev | cut -d/ -f1 | uniq)
+		echo "$dirname"
 	fi
+	rm -rf $dirname
 }
 
 function unzip_file()
 {
-	local dir_name=''
-	unzip_dirname $1 dir_name
-	if [ `echo $dir_name | grep "extracted"` ]
+	dir_name=$(unzip_dirname $1 $2)
+	echo $dir_name
+	if [ `echo $dir_name | grep "extracted$"` ]
 	then
 		echo "Create and extract..."
 		mkdir $dir_name
