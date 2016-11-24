@@ -25,6 +25,8 @@ def help():
         print 'selfupdate               Update alps to latest version online'
         print 'clean                    Clean up the working directory'
         print 'src <url>                download tarball from specified'
+	print 'srcinstall <source path> Build and install from source tarball path
+	print 'urlinstall <url>         Download source tarball from url and then build and install'
         print 'showall                  Show the list of all buildscripts'
         print 'showall <wildcards>      List all buildscripts matching the wildcards. Wildcards should be enclosed in quotes.'
         print 'showinstalled            Show the list of all installed packages'
@@ -301,9 +303,17 @@ def showAllAction():
         pass
 
 def showInstalledAction():
-        allinstalled = subprocess.check_output('cat /etc/alps/installed-list | cut -d= -f1', shell=True)
+        allinstalled = subprocess.check_output('cat /etc/alps/installed-list | cut -d= -f1 | sort', shell=True)
         print allinstalled
         pass
+
+def srcinstall():
+	process = subprocess.Popen(['src-install ' + sys.argv[2]], shell=True)
+	process.wait()
+
+def urlinstall():
+	process = subprocess.Popen(['url-install ' + sys.argv[2]], shell=true)
+	process.wait()
 
 configuration = loadConfig(None)
 distConfig = loadConfig('/etc/lsb-release')
@@ -345,6 +355,12 @@ if sys.argv[1] == 'src':
     exit()
 if sys.argv[1] == 'reinstall':
 	reinstall()
+	exit()
+if sys.argv[1] == 'srcinstall':
+	srcinstall()
+	exit()
+if sys.argv[1] == 'urlinstall':
+	urlinstall()
 	exit()
 if sys.argv[1] == '--help' or sys.argv[1] == 'help':
 	help()
