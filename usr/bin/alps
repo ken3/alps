@@ -25,7 +25,7 @@ def help():
         print 'selfupdate               Update alps to latest version online'
         print 'clean                    Clean up the working directory'
         print 'src <url>                download tarball from specified'
-	print 'srcinstall <source path> Build and install from source tarball path
+	print 'srcinstall <source path> Build and install from source tarball path'
 	print 'urlinstall <url>         Download source tarball from url and then build and install'
         print 'showall                  Show the list of all buildscripts'
         print 'showall <wildcards>      List all buildscripts matching the wildcards. Wildcards should be enclosed in quotes.'
@@ -250,9 +250,9 @@ def selfUpdateAction():
 		urllib.urlretrieve('https://raw.githubusercontent.com/FluidIdeas/alps/master/usr/bin/alps', '/tmp/alps')
 		os.chmod('/tmp/alps', 0755)
 		runCommand(['sudo', 'mv', '-f', '/tmp/alps', alpsExecutable], 'Moving alps from temp location to /usr/bin');
-		execute('rm -rf /tmp/functions && wget https://raw.githubusercontent.com/FluidIdeas/alps/master/var/lib/alps/functions -O /tmp/functions && sudo mv /tmp/functions /var/lib/alps/functions')
-		execute('rm -rf /tmp/src-installer && wget https://raw.githubusercontent.com/FluidIdeas/alps/master/usr/bin/src-installer -O /tmp/src-installer && mv /tmp/src-installer /usr/bin/')
-		execute('rm -rf /tmp/url-installer && wget https://raw.githubusercontent.com/FluidIdeas/alps/master/usr/bin/url-installer -O /tmp/url-installer && mv /tmp/url-installer /usr/bin/')
+		execute('rm -rf /tmp/functions && wget https://raw.githubusercontent.com/FluidIdeas/alps/master/var/lib/alps/functions -O /tmp/functions &>/dev/null && sudo mv /tmp/functions /var/lib/alps/functions')
+		execute('rm -rf /tmp/src-installer && wget https://raw.githubusercontent.com/FluidIdeas/alps/master/usr/bin/src-installer -O /tmp/src-installer &>/dev/null && mv /tmp/src-installer /usr/bin/')
+		execute('rm -rf /tmp/url-installer && wget https://raw.githubusercontent.com/FluidIdeas/alps/master/usr/bin/url-installer -O /tmp/url-installer &>/dev/null && mv /tmp/url-installer /usr/bin/')
 		print 'alps updated successfully'
 	except Exception, e:
 		print 'Error occured in updating alps. ' + str(e)
