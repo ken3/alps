@@ -1,3 +1,43 @@
 #!/bin/bash
 
-echo "Unimplemented..."
+set -e
+set +h
+
+URL=$1
+TARBALL=$(echo $URL | rev | cut -d/ -f1 | rev)
+SOURCE_DIR=$(mktemp -d)
+pushd $SOURCE_DIR
+wget $URL
+if echo "$TARBALL" | grep 'zip$' &>/dev/null; then
+	DIRECTORY=$(unzip -l $TARBALL | grep / | tr -s ' ' | rev | cut -d ' ' -f1 | rev | uniq)
+	unzip $TARBALL
+else
+	DIRECTORY=$(tar tf $TARBALL | rev | cut -d/ -f1 | rev | uniq)
+	tar xf $TARBALL
+fi
+
+cd $DIRECTORY
+
+COMMANDS=""
+if [ -f ./autogen.sh ]; then
+	COMMANDS="./autogen.sh --prefix=/usr && "
+elif [ -f ./configure ]; then
+	COMMANDS="./configure --prefix=/usr && "
+elif [ -f CMakeLists.txt ]; then
+	COMMANDS="cmake -DCMAKE_INSTALL_PREFIX=/usr && "
+elif [ -f setup.py ]; then
+	COMMANDS="python setup.py build && python setup.py install"
+elif [ -f Makefile.PL ]; then
+	COMMANDS="$COMMANDS make Makefile.PL && sudo make install"
+fi
+
+if [ -f setup.py ]; then
+$COMMANDS
+elif [ -f Makefile.PL ]; then
+$COMMANDS
+elif [ -f Makefile ]; then
+COMMANDS="$COMMANDS make -j$(nproc) && sudo make install"
+$COMMANDS
+fi
+
+popd
