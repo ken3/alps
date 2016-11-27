@@ -130,11 +130,16 @@ def isSourceOnly(packageName):
 
 def runPackageInstall(packageName):
 	# print 'SOURCE_ONLY :: Building/Installing ' + packageName + '.sh'
-	process = subprocess.Popen(['/var/cache/alps/scripts/' + packageName + '.sh | tee -a /var/cache/alps/logs/' + packageName + '.log'], shell=True)
-	returncode = process.wait()
-	# returncode = subprocess.call('/var/cache/alps/scripts/' + packageName + '.sh | tee -a /var/cache/alps/logs/' + packageName + '.log', shell=True)
-	if returncode != 0:
-		print 'Error occured while building/installing ' + packageName + '. Aborting.'
+	try:
+		process = subprocess.Popen(['/var/cache/alps/scripts/' + packageName + '.sh | tee -a /var/cache/alps/logs/' + packageName + '.log'], shell=True)
+		returncode = process.wait()
+		# returncode = subprocess.call('/var/cache/alps/scripts/' + packageName + '.sh | tee -a /var/cache/alps/logs/' + packageName + '.log', shell=True)
+		if returncode != 0:
+			print 'Error occured while building/installing ' + packageName + '. Aborting.'
+			exit(1)
+	except Exception as exception:
+		print 'Exception occured'
+		print exception
 		exit(1)
 
 #def runPackageInstall(packageName):
