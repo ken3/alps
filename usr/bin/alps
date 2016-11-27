@@ -134,6 +134,8 @@ def runPackageInstall(packageName):
 		process = subprocess.Popen(['/var/cache/alps/scripts/' + packageName + '.sh | tee -a /var/cache/alps/logs/' + packageName + '.log'], shell=True)
 		returncode = process.wait()
 		# returncode = subprocess.call('/var/cache/alps/scripts/' + packageName + '.sh | tee -a /var/cache/alps/logs/' + packageName + '.log', shell=True)
+		print 'Return Code:'
+		print returncode
 		if returncode != 0:
 			print 'Error occured while building/installing ' + packageName + '. Aborting.'
 			exit(1)
