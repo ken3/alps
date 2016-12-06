@@ -370,13 +370,17 @@ def showUpdateAction():
 	versionfile = '/etc/alps/versions';
 	with open(versionfile) as f:
 		lines = f.readlines()
+	updates = []
 	for line in lines:
 		pos = line.rfind(':')
 		packagename = line[0:pos]
 		installedversion = getInstalledVersion(packagename, lines)
 		latestversion = getLatestVersion(packagename, None)
 		if installedversion != latestversion:
-			print packagename + ' [ Installed: ' + installedversion + ' Latest: ' + latestversion + ' ]'
+			updates.append(packagename + ' [ Installed: ' + installedversion + ' Latest: ' + latestversion + ' ]')
+	updates.sort()
+	for update in updates:
+		print update
 		
 
 configuration = loadConfig(None)
