@@ -258,7 +258,7 @@ def selfUpdateAction():
 		execute('rm -rf /tmp/functions && wget https://raw.githubusercontent.com/FluidIdeas/alps/master/var/lib/alps/functions -O /tmp/functions &>/dev/null && sudo mv /tmp/functions /var/lib/alps/functions')
 		execute('rm -rf /tmp/src-installer && wget https://raw.githubusercontent.com/FluidIdeas/alps/master/usr/bin/src-installer -O /tmp/src-installer &>/dev/null && mv /tmp/src-installer /usr/bin/')
 		execute('rm -rf /tmp/url-installer && wget https://raw.githubusercontent.com/FluidIdeas/alps/master/usr/bin/url-installer -O /tmp/url-installer &>/dev/null && mv /tmp/url-installer /usr/bin/')
-		execute('chmod a+x /usr/bin/{alps,src-installer,url-installer')
+		execute('chmod a+x /usr/bin/{alps,src-installer,url-installer}')
 		print 'alps updated successfully'
 	except Exception, e:
 		print 'Error occured in updating alps. ' + str(e)
