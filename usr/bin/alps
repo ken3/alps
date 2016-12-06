@@ -21,7 +21,8 @@ def help():
         print 'Where <command> can be one of the following:\n'
         print 'install                  Install packages if not installed'
         print 'reinstall                Force installation of an already installed package'
-        print 'updatescripts            Update the package build scripts'
+        print 'updatescripts            Update the package build scripts to the latest version'
+	print 'upgrade <package>        Upgrade package to the latest version. This rebuilds and re-installs the latest version of the package from source'
         print 'selfupdate               Update alps to latest version online'
         print 'clean                    Clean up the working directory'
         print 'src <url>                download tarball from specified'
@@ -227,10 +228,10 @@ def updateAction():
 					pass
 				try:
 					print 'Downloading scripts from github...'
-					response = urllib2.urlopen("https://github.com/FluidIdeas/aryalinux/archive/" + version + ".zip")
-					urllib.urlretrieve ("https://github.com/FluidIdeas/aryalinux/archive/" + version + ".zip", "/tmp/" + version + ".zip")
-					runCommand(["unzip", "-qq", "-o", "/tmp/" + version+ ".zip", "aryalinux-" + version + "/applications/*", "-d", "/tmp"], "Extraction of scripts tarball")
-					files = glob.glob("/tmp/aryalinux-" + version + "/blfs/*.sh")
+					response = urllib2.urlopen("https://github.com/FluidIdeas/aryalinux/archive/master.zip")
+					urllib.urlretrieve ("https://github.com/FluidIdeas/aryalinux/archive/master.zip", "/tmp/master.zip")
+					runCommand(["unzip", "-qq", "-o", "/tmp/master.zip", "aryalinux-master/applications/*", "-d", "/tmp"], "Extraction of scripts tarball")
+					files = glob.glob("/tmp/aryalinux-master/applications/*.sh")
 					for f in files:
 						os.chmod(f, 0755)
 						copy2(f, '/var/cache/alps/scripts')
@@ -238,8 +239,8 @@ def updateAction():
 				except urllib2.URLError, e:
 					print 'Could not download the scripts tarball. Aborting.'
 				try:
-					os.remove("/tmp/" + version + ".zip")
-					runCommand(["rm", "-rf", "/tmp/aryalinux-" + version], "Cleaning up")
+					os.remove("/tmp/master.zip")
+					runCommand(["rm", "-rf", "/tmp/aryalinux-master"], "Cleaning up")
 				except Exception:
 					pass
 
@@ -319,6 +320,65 @@ def urlinstall():
 	process = subprocess.Popen(['url-install ' + sys.argv[2]], shell=True)
 	process.wait()
 
+def upgradeAction():
+	response = raw_input('Upgrade ' + sys.argv[2] + '? (y/N) : ')
+	if response == 'y' or response == 'Y':
+		with open('/etc/alps/versions', 'r') as f:
+			lines = f.readlines()
+		packageversion = ''
+		for line in lines:
+			if line.startswith(sys.argv[2] + ':'):
+				packageversion = line.replace(sys.argv[2] + ':', '')
+		with open('/var/cache/alps/scripts/' + sys.argv[2] + '.sh') as f:
+			lines = f.readlines()
+		latestpackageversion = '*'
+		for line in lines:
+			if line.startswith('VERSION='):
+				latestpackageversion = line.replace('VERSION=', '')
+		if packageversion == latestpackageversion:
+			print 'The installed version for ' + sys.argv[2] + ' is the latest version. Not upgrading.'
+			exit()
+		else:
+			print 'Installed version: ' + packageversion + ', Latest version: ' + latestpackageversion
+			process = subprocess.Popen(['/var/cache/alps/scripts/' + sys.argv[2] + '.sh'], shell=True)
+			process.wait()
+
+def getInstalledVersion(packagename, lines):
+	packageversion = ''
+	if lines == None:
+		with open('/etc/alps/versions', 'r') as f:
+			lines = f.readlines()
+	for line in lines:
+		if line.startswith(packagename + ':'):
+			packageversion = line.replace(packagename + ':', '').replace('\n', '')
+	return packageversion
+
+def getLatestVersion(packagename, lines):
+	latestpackageversion = ''
+	try:
+		if lines == None:
+			with open('/var/cache/alps/scripts/' + packagename + '.sh') as f:
+				lines = f.readlines()
+		for line in lines:
+			if line.startswith('VERSION='):
+				latestpackageversion = line.replace('VERSION=', '').replace('"', '').replace('\n', '')
+	except:
+		pass
+	return latestpackageversion
+
+def showUpdateAction():
+	versionfile = '/etc/alps/versions';
+	with open(versionfile) as f:
+		lines = f.readlines()
+	for line in lines:
+		pos = line.rfind(':')
+		packagename = line[0:pos]
+		installedversion = getInstalledVersion(packagename, lines)
+		latestversion = getLatestVersion(packagename, None)
+		if installedversion != latestversion:
+			print packagename + ' [ Installed: ' + installedversion + ' Latest: ' + latestversion + ' ]'
+		
+
 configuration = loadConfig(None)
 distConfig = loadConfig('/etc/lsb-release')
 
@@ -365,6 +425,12 @@ if sys.argv[1] == 'srcinstall':
 	exit()
 if sys.argv[1] == 'urlinstall':
 	urlinstall()
+	exit()
+if sys.argv[1] == 'upgrade':
+	upgradeAction()
+	exit()
+if sys.argv[1] == 'showupdates':
+	showUpdateAction()
 	exit()
 if sys.argv[1] == '--help' or sys.argv[1] == 'help':
 	help()
