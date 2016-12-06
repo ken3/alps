@@ -313,11 +313,11 @@ def showInstalledAction():
         pass
 
 def srcinstall():
-	process = subprocess.Popen(['src-install ' + sys.argv[2]], shell=True)
+	process = subprocess.Popen(['src-installer ' + sys.argv[2]], shell=True)
 	process.wait()
 
 def urlinstall():
-	process = subprocess.Popen(['url-install ' + sys.argv[2]], shell=True)
+	process = subprocess.Popen(['url-installer ' + sys.argv[2]], shell=True)
 	process.wait()
 
 def upgradeAction():
