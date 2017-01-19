@@ -3,8 +3,8 @@
 import sys
 import time
 import subprocess
-import urllib
-import urllib2
+#import urllib
+#import urllib2
 import os
 import glob
 from shutil import copy2
@@ -180,19 +180,21 @@ def runPackageInstall(packageName):
 #			else:
 #				print 'Build-Install-Makepkg succeeded.'
 
-def runCommand(cmd, actionName):
-	p = subprocess.Popen(cmd)
+def runCommand(command, actionName):
+	cmdlist = []
+	cmdlist.append(command)
+	p = subprocess.Popen(cmdlist, shell=True)
 	p.wait()
 	if p.returncode != 0:
 		print 'Error occured in performing operation: ' + actionName
 		print 'Aborting...'
 		exit()
 
-def execute(command):
-	cmdlist = []
-	cmdlist.append(command)
-	p = subprocess.Popen(cmdlist, shell=True)
-	p.wait()
+#def execute(command):
+#	cmdlist = []
+#	cmdlist.append(command)
+#	p = subprocess.Popen(cmdlist, shell=True)
+#	p.wait()
 
 def installAction(prompt=True):
 	packages = []
@@ -228,19 +230,20 @@ def updateAction():
 					pass
 				try:
 					print 'Downloading scripts from github...'
-					response = urllib2.urlopen("https://github.com/FluidIdeas/aryalinux/archive/master.zip")
-					urllib.urlretrieve ("https://github.com/FluidIdeas/aryalinux/archive/master.zip", "/tmp/master.zip")
-					runCommand(["unzip", "-qq", "-o", "/tmp/master.zip", "aryalinux-master/applications/*", "-d", "/tmp"], "Extraction of scripts tarball")
+					baseurl = 'https://github.com/FluidIdeas/aryalinux/archive'
+					v = dict(b=baseurl, f='master.zip', t='/tmp', r='aryalinux-master')
+					runCommand('rm -rf %(t)s/%(f)s %(t)s/%(r)s' % v, 'Cleaning up')
+					runCommand('wget %(b)s/%(f)s -O %(t)s/%(f)s &>/dev/null' % v, 'Fetching scripts tarball')
+					runCommand('unzip -qq -o %(t)s/%(f)s %(r)s/applications/* -d %(t)s' % v, 'Extraction of scripts tarball')
 					files = glob.glob("/tmp/aryalinux-master/applications/*.sh")
 					for f in files:
 						os.chmod(f, 0755)
 						copy2(f, '/var/cache/alps/scripts')
 					print 'Scripts updated successfully'
-				except urllib2.URLError, e:
+				except Exception:
 					print 'Could not download the scripts tarball. Aborting.'
 				try:
-					os.remove("/tmp/master.zip")
-					runCommand(["rm", "-rf", "/tmp/aryalinux-master"], "Cleaning up")
+					runCommand('rm -rf /tmp/master.zip /tmp/aryalinux-master', 'Cleaning up')
 				except Exception:
 					pass
 
@@ -251,14 +254,13 @@ def selfUpdateAction():
 		pass
 	try:
 		print 'Fetching the latest version of alps...'
-		response = urllib2.urlopen('https://raw.githubusercontent.com/FluidIdeas/alps/master/usr/bin/alps')
-		urllib.urlretrieve('https://raw.githubusercontent.com/FluidIdeas/alps/master/usr/bin/alps', '/tmp/alps')
-		os.chmod('/tmp/alps', 0755)
-		runCommand(['sudo', 'mv', '-f', '/tmp/alps', alpsExecutable], 'Moving alps from temp location to /usr/bin');
-		execute('rm -rf /tmp/functions && wget https://raw.githubusercontent.com/FluidIdeas/alps/master/var/lib/alps/functions -O /tmp/functions &>/dev/null && sudo mv /tmp/functions /var/lib/alps/functions')
-		execute('rm -rf /tmp/src-installer && wget https://raw.githubusercontent.com/FluidIdeas/alps/master/usr/bin/src-installer -O /tmp/src-installer &>/dev/null && mv /tmp/src-installer /usr/bin/')
-		execute('rm -rf /tmp/url-installer && wget https://raw.githubusercontent.com/FluidIdeas/alps/master/usr/bin/url-installer -O /tmp/url-installer &>/dev/null && mv /tmp/url-installer /usr/bin/')
-		execute('chmod a+x /usr/bin/{alps,src-installer,url-installer}')
+		baseurl = 'https://raw.githubusercontent.com/FluidIdeas/alps/master'
+		for x in ['alps', 'src-installer', 'url-installer']:
+			v = dict(b=baseurl, r='/usr/bin/'+x, t='/tmp/'+x, m='Fetching '+x)
+			runCommand('rm -rf %(t)s && wget %(b)s%(r)s -O %(t)s &>/dev/null && chmod 0755 %(t)s && sudo mv %(t)s %(r)s' % v, v['m'])
+		for x in ['functions']:
+			v = dict(b=baseurl, r='/var/lib/alps/'+x, t='/tmp/'+x, m='Fetching '+x)
+			runCommand('rm -rf %(t)s && wget %(b)s%(r)s -O %(t)s &>/dev/null && chmod 0644 %(t)s && sudo mv %(t)s %(r)s' % v, v['m'])
 		print 'alps updated successfully'
 	except Exception, e:
 		print 'Error occured in updating alps. ' + str(e)
