@@ -1,0 +1,28 @@
+#!/usr/bin/python
+
+import requests
+
+# extract filename from URL string
+def filename(url):
+	return url.rsplit('/', 1)[1].split('?')[0]
+
+# download via URL
+def download(url, file = None):
+	if file == None:
+		file = filename(url)
+	r = requests.get(url)
+	if r.status_code == 200:
+		print '---> ' + file
+		with open(file, 'wb') as f: f.write(r.content)
+	else:
+		raise Exception(url)
+
+# main
+try:
+	print 'Fetching files from github...'
+	baseurl = 'https://raw.githubusercontent.com/FluidIdeas/alps/master/usr/bin/'
+	for x in ['alps', 'url-installer', 'src-installer', 'expect_to_fail']:
+		download(baseurl + x)
+except Exception, e:
+	print 'Exception: ' + str(e)
+
